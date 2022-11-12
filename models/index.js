@@ -1,6 +1,6 @@
 const User = require('./User');
 const Genre = require('./Genre');
-const Albums = require('./Albums');
+const Albums = require('./Album');
 
 Genre.hasMany(Albums, {
   foreignKey: 'genre_id',

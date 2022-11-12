@@ -1,17 +1,13 @@
 const User = require('./User');
 const Genre = require('./Genre');
-const Album = require('./Album');
+const Albums = require('./Albums');
 
-Genre.hasMany(Album, {
+Genre.hasMany(Albums, {
   foreignKey: 'genre_id',
 });
 
-Album.belongsTo(Genre, {
+Albums.belongsTo(Genre, {
   foreignKey: 'genre_id',
 });
 
-Album.belongsTo(Genre, {
-  foreignKey: 'genre_id',
-});
-
-module.exports = { User, Genre, Album };
+module.exports = { User, Genre, Albums };

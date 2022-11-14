@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Album, User } = require('../models');
+const { Albums, User, Genre } = require('../models');
 const withAuth = require('../utils/auth');
 
 
@@ -14,17 +14,21 @@ router.get('/', (req, res) => {
 });
 
 router.get('/genre', withAuth, async (req, res) => {
+
   try {
-    // Find the logged in user based on the session ID
     const userData = await User.findByPk(req.session.user_id, {
-      attributes: { exclude: ['password'] },
-      include: [{ model: Project }],
+      attributes: { exclude: ['password'] }
     });
 
     const user = userData.get({ plain: true });
 
+    const genreData = await Genre.findAll()
+
+    const genre = genreData.map((genre) => genre.get({ plain: true }));
+    console.log(genre)
     res.render('genre', {
       ...user,
+      genre,
       logged_in: true
     });
   } catch (err) {
@@ -32,49 +36,31 @@ router.get('/genre', withAuth, async (req, res) => {
   }
 });
 
-router.get('/album', async (req, res) => {
+router.get('/genre/:genre_id/albums', withAuth, async (req, res) => {
   try {
-    const albumData = await Album.findAll({
-      include: [
-        {
-          model: User,
-          attributes: ['name'],
-        },
-      ],
+    const albumData = await Albums.findAll({
+      where: { genre_id: req.params.genre_id}
     });
 
     const album = albumData.map((album) => album.get({ plain: true }));
 
-    res.render('album', { 
-      projects, 
+    const genre = await Genre.findOne({
+      where: { id: req.params.genre_id }
+    })
+
+    const inventory = {
+      genre: genre.genre_name,
+      album
+    }
+
+    res.render('albums', { 
+      inventory, 
       logged_in: req.session.logged_in 
     });
   } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-router.get('/album/:id', async (req, res) => {
-  try {
-    const albumData = await Album.findByPk(req.params.id, {
-      include: [
-        {
-          model: User,
-          attributes: ['name'],
-        },
-      ],
-    });
-
-    const album = albumData.get({ plain: true });
-
-    res.render('album', {
-      ...album,
-      logged_in: req.session.logged_in
-    });
-  } catch (err) {
+    console.log(err)
     res.status(500).json(err);
   }
 });
 
 module.exports = router;
-
